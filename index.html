@@ -1,53 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SolidJS Counter</title>
   </head>
   <body>
     <script type="module">
-      import {
-        createSignal,
-        onCleanup,
-      } from "https://cdn.skypack.dev/solid-js";
+      import { createSignal, onCleanup } from "https://cdn.skypack.dev/solid-js";
       import { render } from "https://cdn.skypack.dev/solid-js/web";
       import html from "https://cdn.skypack.dev/solid-js/html";
+
       import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  QueryClient,
-  QueryClientProvider,
-} from "https://unpkg.com/@tanstack/react-query@4/build/umd/index.production.js"
+        QueryClient,
+        QueryClientProvider,
+        useQuery,
+      } from "https://unpkg.com/@tanstack/solid-query@4/build/umd/index.production.js";
 
       const App = () => {
-        const [count, setCount] = createSignal(0),
-        
-          timer = setInterval(() => setCount(count() + 1), 1000);
+        const [count, setCount] = createSignal(0);
+
+        const timer = setInterval(() => setCount((c) => c + 1), 1000);
         onCleanup(() => clearInterval(timer));
-        
+
         const { isLoading, error, data } = useQuery({
-    queryKey: ['todos'],
-    queryFn: () =>
-      fetch('https://jsonplaceholder.typicode.com/todos/1').then(
-        (res) => res.json(),
-      ),
-  })
+          queryKey: ["todo"],
+          queryFn: () =>
+            fetch("https://jsonplaceholder.typicode.com/todos/1").then((res) =>
+              res.json(),
+            ),
+        });
 
-  if (isLoading) return html`<div>Loading...</div>`;
+        if (isLoading) return html`<div>Loading...</div>`;
 
-  if (error) return html`<div>An error has occurred: ${error.message}</div>`;
-        
-        
+        if (error)
+          return html`<div>An error has occurred: ${error.message}</div>`;
+
         return html`
-        <div>
-      <h1>{data.userId}</h1>
-      <p>{data.title}</p>
-    </div>
-        <div>${count}</div>`;
+          <div>
+            <h1>${data.userId}</h1>
+            <p>${data.title}</p>
+          </div>
+          <div>${count()}</div>
+        `;
       };
-      render(App, document.body);
+
+      const queryClient = new QueryClient();
+
+      render(
+        () =>
+          html`<${QueryClientProvider} client=${queryClient}>
+            <${App} />
+          </${QueryClientProvider}>`,
+        document.body,
+      );
     </script>
   </body>
 </html>
